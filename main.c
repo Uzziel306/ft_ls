@@ -38,7 +38,33 @@ int		print_value(char *file)
 	ft_printf((fileStat.st_mode & S_IROTH) ? "r" : "-");
 	ft_printf((fileStat.st_mode & S_IWOTH) ? "w" : "-");
 	ft_printf((fileStat.st_mode & S_IXOTH) ? "x" : "-");
-	ft_printf("  %d %s  %s %d ", fileStat.st_nlink, pw->pw_name, gr->gr_name, fileStat.st_size);
+	ft_printf("  %d %s  %s %7d ", fileStat.st_nlink, pw->pw_name, gr->gr_name, fileStat.st_size);
+	ft_printf("%s %s\n", ft_strsub(ctime(&fileStat.st_ctime), 4, 12), file);
+	return (fileStat.st_blocks);
+}
+
+int		print_value_ls(char *file)
+{
+	char date[36];
+	struct stat fileStat;
+	struct passwd *pw;
+	struct group  *gr;
+
+	if(stat(file, &fileStat) < 0)
+			return 1;
+	pw = getpwuid(fileStat.st_uid);
+	gr = getgrgid(fileStat.st_gid);
+	ft_printf((S_ISDIR(fileStat.st_mode)) ? "d" : "-");
+	ft_printf((fileStat.st_mode & S_IRUSR) ? "r" : "-");
+	ft_printf((fileStat.st_mode & S_IWUSR) ? "w" : "-");
+	ft_printf((fileStat.st_mode & S_IXUSR) ? "x" : "-");
+	ft_printf((fileStat.st_mode & S_IRGRP) ? "r" : "-");
+	ft_printf((fileStat.st_mode & S_IWGRP) ? "w" : "-");
+	ft_printf((fileStat.st_mode & S_IXGRP) ? "x" : "-");
+	ft_printf((fileStat.st_mode & S_IROTH) ? "r" : "-");
+	ft_printf((fileStat.st_mode & S_IWOTH) ? "w" : "-");
+	ft_printf((fileStat.st_mode & S_IXOTH) ? "x" : "-");
+	ft_printf("  %d %s  %s %7d ", fileStat.st_nlink, pw->pw_name, gr->gr_name, fileStat.st_size);
 	ft_printf("%s %s\n", ft_strsub(ctime(&fileStat.st_ctime), 4, 12), file);
 	return (fileStat.st_blocks);
 }
@@ -120,12 +146,42 @@ void		ft_ls() // ls unix comand
 	ft_print_Matrix(matrix);
 }
 
+void		ft_ls_ls()
+{
+	int i;
+	int j;
+	int flag;
+	char **matrix;
 
+	flag = 1;
+	i = ft_lendir();
+	matrix = ft_make_matrix(i);
+	while (flag != 0)
+	{
+		flag = 0;
+		while(matrix[j] != NULL)
+		{
+			if (matrix[j + 1] && ft_strcmp(matrix[j], matrix[j + 1]) > 0)
+			{
+				ft_swapchar(&matrix[j], &matrix[j + 1]); //swaping the names
+				flag++;
+			}
+			j++;
+		}
+		j = 0;
+	}
+	j = -1;
+	while(matrix[++j] != NULL)
+		print_value_ls(matrix[j]);
+
+}
 
 int main(int argc, char **argv)
 {
 	if (argc == 1)
 		ft_ls();
+	if (argc == 2 && !(ft_strcmp(argv[1], "-ls")))
+		ft_ls_ls();
 
 
 	// print_value(argv[1]);
