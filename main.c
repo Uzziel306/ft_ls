@@ -71,13 +71,13 @@ int				print_value(char *file)
 }
 
 
-int				ft_lendir() //Len of directory
+int				ft_lendir(char *file) //Len of directory
 {
 	struct	dirent *pDirent;
 	DIR			*pDir;
 	int			i;
 
-	pDir = opendir(".");
+	pDir = opendir(file);
 	i = 0;
 	while ((pDirent = readdir(pDir)) != NULL)
 	if(pDirent->d_name[0] != '.')
@@ -118,26 +118,35 @@ char			**ft_make_matrix(int size, char *file) // feed the matrix with the names 
 		}
 		matrix[i] = NULL;
 	closedir(pDir);
+	// ft_print_Matrix(matrix);
 	return (matrix);
 }
 
 char		**ft_ls(t_ls *f, char *file) // ls unix comand
 {
 	char **matrix;
+	char *a;
+	char *b;
+	int		i;
 
+	i = 0;
 	start(f);
-	f->t.i = ft_lendir();
-	matrix = ft_make_matrix(f->t.i, file);
+	i = ft_lendir(file);
+	matrix = ft_make_matrix(i, file);
 	while (f->t.flag != 0)
 	{
 		f->t.flag = 0;
 		while(matrix[f->t.j] != NULL)
 		{
-			if (matrix[f->t.j + 1] != NULL && ft_strcmp(matrix[f->t.j], matrix[f->t.j + 1]) > 0)
+			a =  matrix[f->t.j];
+			b =  matrix[f->t.j + 1];
+			if (matrix[f->t.j + 1] && ft_strcmp(matrix[f->t.j], matrix[f->t.j + 1]) > 0)
 			{
 				ft_swapchar(&matrix[f->t.j], &matrix[f->t.j + 1]); //swaping the names
 				f->t.flag += 1;
 			}
+			a =  matrix[f->t.j];
+			b =  matrix[f->t.j + 1];
 			f->t.j++;
 		}
 		f->t.j = 0;
@@ -171,7 +180,6 @@ void			ft_ls_R(t_ls *f, char *file)
 			ft_ls_R(f, matrix[i]);
 		i++;
 	}
-	ft_memdel((void **)&matrix);
 }
 
 void			ft_ls_ls(t_ls *f)
@@ -180,7 +188,7 @@ void			ft_ls_ls(t_ls *f)
 
 	matrix = ft_ls(f, ".");
 	start(f);
-	f->t.i = ft_lendir();
+	f->t.i = ft_lendir(".");
 	ft_printf("total %d\n", getting_all_blocks(matrix, f));
 	while(matrix[f->t.j] != NULL)
 	{
