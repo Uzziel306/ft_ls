@@ -168,16 +168,24 @@ void			ft_ls_R(t_ls *f, char *file)
 {
 	char **matrix;
 	int i;
-
+	struct	stat fileStat;
+	char *tmp;
 	i = 0;
 	if ((ft_strcmp(file, ".") != 0))
-		ft_printf("./%s:\n", file);
+		ft_printf("%s : \n", file);
 	matrix = ft_ls(f, file);
 	ft_print_Matrix(matrix);
 	while (matrix[i] != NULL)
 	{
-		if (ft_getting_dir(matrix[i]))
-			ft_ls_R(f, matrix[i]);
+		tmp = ft_strjoin(file, "/");
+		tmp = ft_strjoin(tmp, matrix[i]);
+		stat(tmp, &fileStat);
+		if(S_ISDIR(fileStat.st_mode))
+			{
+				matrix[i] = ft_strdup(tmp);
+				ft_printf("\n\n", file);
+				ft_ls_R(f, matrix[i]);
+			}
 		i++;
 	}
 }
