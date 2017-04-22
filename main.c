@@ -86,15 +86,26 @@ int				ft_lendir(char *file) //Len of directory
 	return (i);
 }
 
-void			ft_print_Matrix(char **matrix) //Print the matrix
+void			ft_print_Matrix(char **matrix, int flag) //Print the matrix
 {
 	int			j;
 
 	j = 0;
-	while(matrix[j] != NULL)
+	if (flag == 1)
 	{
-		ft_printf("%s\n", matrix[j]);
-		j++;
+		while(matrix[j] != NULL)
+		{
+			ft_printf("%s\n", matrix[j]);
+			j++;
+		}
+	}
+	else
+	{
+		while(matrix[j] != NULL)
+		{
+			print_value(matrix[j]);
+			j += 1;
+		}
 	}
 }
 
@@ -174,7 +185,7 @@ void			ft_ls_R(t_ls *f, char *file)
 	if ((ft_strcmp(file, ".") != 0))
 		ft_printf("%s : \n", file);
 	matrix = ft_ls(f, file);
-	ft_print_Matrix(matrix);
+	ft_print_Matrix(matrix, 1);
 	while (matrix[i] != NULL)
 	{
 		tmp = ft_strjoin(file, "/");
@@ -190,18 +201,43 @@ void			ft_ls_R(t_ls *f, char *file)
 	}
 }
 
-void			ft_ls_ls(t_ls *f)
+void			ft_ls_l(t_ls *f, char *file)
 {
 	char		**matrix;
 
-	matrix = ft_ls(f, ".");
+	matrix = ft_ls(f, file);
 	start(f);
-	f->t.i = ft_lendir(".");
-	ft_printf("total %d\n", getting_all_blocks(matrix, f));
-	while(matrix[f->t.j] != NULL)
+	f->t.i = ft_lendir(file);
+	if (f->t.i != 1)
+		ft_printf("total %d\n", getting_all_blocks(matrix, f));
+	ft_print_Matrix(matrix, 0);
+}
+
+void			ft_ls_R_2(t_ls *f, char *file)
+{
+	char **matrix;
+	int i;
+	struct	stat fileStat;
+	char *tmp;
+	i = 0;
+	if ((ft_strcmp(file, ".") != 0))
+		ft_printf("%s : \n", file);
+	matrix = ft_ls(f, file);
+
+	while (matrix[i] != NULL)
 	{
-		print_value(matrix[f->t.j]);
-		f->t.j += 1;
+		tmp = ft_strjoin(file, "/");
+		tmp = ft_strjoin(tmp, matrix[i]);
+		matrix[i] = ft_strdup(tmp);
+		print_value(matrix[i]);
+		stat(tmp, &fileStat);
+		if(S_ISDIR(fileStat.st_mode))
+			{
+
+				ft_printf("\n", file);
+				ft_ls_R_2(f, matrix[i]);
+			}
+		i++;
 	}
 }
 
@@ -214,10 +250,10 @@ int			main(int argc, char **argv)
 		return (0);
 	start(f);
 	if (argc == 1)
-		ft_print_Matrix(ft_ls(f, "."));
+		ft_print_Matrix(ft_ls(f, "."), 1);
 	if (argc == 2 && (ft_strcmp(argv[1], "-l") == 0))
-		ft_ls_ls(f);
+		ft_ls_l(f, ".");
 	if (argc == 2 && (ft_strcmp(argv[1], "-R") == 0))
-		ft_ls_R(f, ".");
+		ft_ls_R_2(f, ".");
 	return (0);
 }

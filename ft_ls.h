@@ -19,7 +19,9 @@ typedef struct		s_tols
 	int				tb;
 	int				flag;
 	int				r;
+	int				o;
 	char			*str;
+	char			*tmp;
 	char			**matrix;
 }					t_tols;
 
