@@ -300,6 +300,9 @@ int			flags(int argc, char **argv, t_ls *f)
 			f->f.r = 1;
 		else if ((ft_strcmp(argv[i], "-t")) == 0)
 			f->f.t = 1;
+
+
+			int j;
 		i++;
 	}
 	printf("%s\n", tmp);
