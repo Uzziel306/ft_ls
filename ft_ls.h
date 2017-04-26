@@ -25,9 +25,19 @@ typedef struct		s_tols
 	char			**matrix;
 }					t_tols;
 
+typedef struct		s_flags
+{
+	int				l;
+	int				r2;
+	int				a;
+	int				r;
+	int				t;
+}					t_flags;
+
 typedef struct		s_ls
 {
 	t_tols			t;
+	t_flags			f;
 }					t_ls;
 
 #endif
