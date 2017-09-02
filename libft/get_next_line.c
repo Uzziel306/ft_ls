@@ -3,73 +3,79 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asolis <marvin@42.fr>                      +#+  +:+       +#+        */
+/*   By: gsolis <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/01/09 21:06:52 by asolis            #+#    #+#             */
-/*   Updated: 2017/01/10 19:40:53 by asolis           ###   ########.fr       */
+/*   Created: 2017/02/23 13:50:33 by gsolis            #+#    #+#             */
+/*   Updated: 2017/02/23 13:50:34 by gsolis           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-int				ft_len(char *s)
+static void			ft_put(char *tmp_str, char **str, char *heap)
 {
-	int i;
-	int j;
+	*str = ft_strjoin(tmp_str, heap);
+}
 
-	j = 0;
+static int			ft_check(int ret, char **line)
+{
+	if (!ret && *line)
+		*line = NULL;
+	return (ret);
+}
+
+static int			check_line(char **str, char **line)
+{
+	char			*tmp_str;
+	int				i;
+
 	i = 0;
-	while (s[i] != '\0')
-	{
-		if (s[i] == '\n')
-			j++;
-		i++;
-	}
-	return (j);
+	if (!(tmp_str = ft_strchr(*str, '\n')))
+		return (0);
+	*tmp_str = '\0';
+	*line = ft_strdup(*str);
+	*str = ft_strdup(tmp_str + 1);
+	return (1);
 }
 
-int				ft_solve(char **line, char *stc_buf)
+static	int			read_file(int fd, char *heap, char **str, char **line)
 {
-	char *i;
-	char *temp;
+	int				ret;
+	char			*tmp_str;
 
-	if ((i = ft_strchr(stc_buf, '\n')) != 0)
+	while ((ret = read(fd, heap, BUFF_SIZE)) > 0)
 	{
-		temp = ft_strsub(stc_buf, 0, ft_strlen(stc_buf) - ft_strlen(i));
-		ft_memmove(stc_buf, &i[1], ft_strlen(&i[1]) + 1);
-		*line = ft_strdup(temp);
-		return (1);
-	}
-	if (ft_len(stc_buf) == 0 && ft_strlen(stc_buf) > 0)
-	{
-		*line = ft_strdup(stc_buf);
-		*stc_buf = '\0';
-		return (1);
-	}
-	return (0);
-}
-
-int				get_next_line(const int fd, char **line)
-{
-	static char	*stc_buff = NULL;
-	char		buff[BUFF_SIZE + 1];
-	char		*temp2;
-	int			ret;
-
-	if (fd == -1 || BUFF_SIZE <= 0)
-		return (-1);
-	if (stc_buff == NULL)
-		stc_buff = ft_strnew(0);
-	while (!ft_strchr(stc_buff, '\n'))
-	{
-		ret = read(fd, buff, BUFF_SIZE);
-		if (ret == -1)
-			return (-1);
-		if (ret == 0)
+		heap[ret] = '\0';
+		if (*str)
+		{
+			tmp_str = *str;
+			ft_put(tmp_str, str, heap);
+		}
+		else
+			*str = ft_strdup(heap);
+		if (check_line(str, line))
 			break ;
-		buff[ret] = '\0';
-		temp2 = ft_strjoin(stc_buff, buff);
-		stc_buff = temp2;
 	}
-	return (ft_solve(line, stc_buff));
+	return (ret > 0 ? 1 : ret);
+}
+
+int					get_next_line(int const fd, char **line)
+{
+	static char		*str[4096];
+	char			*heap;
+	int				ret;
+
+	if (!line || (fd < 0 || fd > 4096) || (read(fd, str[fd], 0) < 0))
+		return (-1);
+	if (str[fd])
+		if (check_line(&str[fd], line))
+			return (1);
+	heap = ft_strnew(BUFF_SIZE);
+	ft_bzero(heap, BUFF_SIZE);
+	ret = read_file(fd, heap, &str[fd], line);
+	if (ret != 0 || str[fd] == NULL || str[fd][0] == '\0')
+		return (ft_check(ret, line));
+	*line = str[fd];
+	str[fd] = NULL;
+	return (1);
 }

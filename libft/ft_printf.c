@@ -3,118 +3,140 @@
 /*                                                        :::      ::::::::   */
 /*   ft_printf.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asolis <marvin@42.fr>                      +#+  +:+       +#+        */
+/*   By: gsolis <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/01/09 21:06:52 by asolis            #+#    #+#             */
-/*   Updated: 2017/01/10 19:40:53 by asolis           ###   ########.fr       */
+/*   Created: 2017/03/10 14:37:31 by gsolis            #+#    #+#             */
+/*   Updated: 2017/03/10 14:37:33 by gsolis           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-char		ft_get_format(char c)
+int			hash(char ***fmt, va_list ap)
 {
-	char	*format;
-	int		i;
-
-	i = 0;
-	format = ft_strnew(15);
-	format = "sSpdDioOuUxXcC%";
-	while (format[i] != '\0')
+	**fmt += 1;
+	while (***fmt == ' ')
+		**fmt += 1;
+	if (***fmt == 'o' || ***fmt == 'O')
 	{
-		if (format[i] == c)
-			return (c);
-		i++;
+		write(1, "0", 1);
+		return ((print_o(ap, 1)) + 1);
+	}
+	else if (***fmt == 'x')
+	{
+		write(1, "0x", 2);
+		return ((print_x(ap)) + 2);
+	}
+	else if (***fmt == 'X')
+	{
+		write(1, "0X", 2);
+		return ((print_x_upper(ap)) + 2);
 	}
 	return (0);
 }
 
-void		ft_get_nb(t_pf *f, int flag, char **str)
+int			mult_options(char ***fmt, va_list ap)
 {
-	if (flag == 1)
+	if (***fmt == '-')
 	{
-		f->t.nb[f->t.j] = **str;
-		f->t.y = ft_atoi(f->t.nb);
-		f->t.j += 1;
-		f->t.fnb += 1;
+		**fmt += 1;
+		while (***fmt == ' ' || ***fmt == '0' || ***fmt == '-')
+			**fmt += 1;
+		if (***fmt == 'd' || ***fmt == 'i')
+			return (print_d(ap, 0, 0));
+		else if (***fmt >= '1' || ***fmt >= '9')
+			return (space_d(&fmt, ap, 0, 1));
 	}
-	else if (flag == 2)
+	else if (***fmt == '+')
 	{
-		f->t.nb2[f->t.k] = **str;
-		f->t.x = ft_atoi(f->t.nb2);
-		f->t.k += 1;
-		f->t.fnb += 1;
-	}
-}
-
-int			ft_getflags(char *flag, t_pf *f)
-{
-	if (flag[0] == 'h' && flag[1] && flag[1] != 'h')
-		f->t.h = 1;
-	else if (flag[0] == 'h' && flag[1] && flag[1] == 'h')
-		f->t.hh = 1;
-	else if (flag[0] == 'l' && flag[1] && flag[1] != 'l')
-		f->t.l = 1;
-	else if (flag[0] == 'l' && flag[1] && flag[1] == 'l')
-		f->t.ll = 1;
-	else if (flag[0] == 'j')
-		f->t.l = 1;
-	else if (flag[0] == 'z')
-		f->t.zz = 1;
-	return (0);
-}
-
-int			ft_getval(char **s, t_pf *f, va_list pa)
-{
-	while (**s)
-	{
-		if (**s == '.')
-			f->t.dat = 1;
-		else if (**s == '-')
-			f->t.m = 1;
-		else if (**s == '+')
-			f->t.plus = 1;
-		else if (**s == '#')
-			f->t.ht = 1;
-		else if ((**s == '0') && ((*(*s - 1)) == '%' || (*(*s - 1)) == '+'))
-			f->t.z = 1;
-		else if (**s == ' ' && (*(*s - 1)) == '%')
-			f->t.s = 1;
-		else if (ft_isdigit(**s) && f->t.dat != 0)
-			ft_get_nb(f, 1, s);
-		else if (ft_isdigit(**s) && f->t.dat != 1)
-			ft_get_nb(f, 2, s);
-		else if (ft_isalpha(**s))
-			ft_getflags(*s, f);
-		if ((f->t.c = ft_get_format(**s)))
-			return (ft_chose_format(f, pa));
-		*s += 1;
+		**fmt += 1;
+		while (***fmt == '+' || ***fmt == ' ')
+			**fmt += 1;
+		if (***fmt == 'd' || ***fmt == 'i')
+			return (print_d(ap, 1, 0));
+		if (***fmt == '0')
+			return (zero_w(&fmt, ap, 1));
 	}
 	return (0);
 }
 
-int			ft_printf(const char *format, ...)
+int			extra_con(char ***fmt, va_list ap, int flag)
 {
-	t_pf	*f;
-	va_list	pa;
-	char	*str;
+	if (***fmt == '0')
+		return (zero_w(&fmt, ap, 0));
+	else if (***fmt == 'x')
+		return (print_x(ap));
+	else if (***fmt == 'X')
+		return (print_x_upper(ap));
+	else if (***fmt == '%')
+		return (print_m());
+	else if (***fmt == 'l')
+		return (l_funtion(&fmt, ap));
+	else if (***fmt == 'h')
+		return (l_funtion(&fmt, ap));
+	else if (***fmt == 'j')
+		return (l_funtion(&fmt, ap));
+	else if (***fmt == 'z')
+		return (l_funtion(&fmt, ap));
+	else if (***fmt == 'D')
+		return (ll_d(va_arg(ap, long long)));
+	else if (***fmt >= '1' || ***fmt >= '9')
+		return (space_d(&fmt, ap, flag, 0));
+	return (0);
+}
 
-	va_start(pa, format);
-	str = ft_strdup(format);
-	f = (t_pf*)malloc(sizeof(t_pf));
-	zero(f);
-	f->t.res = 0;
-	while (*str)
+int			read_con(char **fmt, va_list ap, int space)
+{
+	while (**fmt == ' ')
 	{
-		if (*str == '%')
+		*fmt += 1;
+		space = 1;
+	}
+	if (**fmt == 's' || **fmt == 'S')
+		return (print_s(va_arg(ap, char*)));
+	else if (**fmt == 'i' || **fmt == 'd')
+		return (print_d(ap, 0, space));
+	else if (**fmt == 'o' || **fmt == 'O')
+		return (ll_uns(va_arg(ap, unsigned long long int), 8, 0));
+	else if (**fmt == 'c' || **fmt == 'C')
+		return (print_c(ap));
+	else if (**fmt == 'p')
+		return (print_p(ap));
+	else if (**fmt == 'u' || **fmt == 'U')
+		return (print_u(ap));
+	else if (**fmt == '#')
+		return (hash(&fmt, ap));
+	else if (**fmt == '-' || **fmt == '+')
+		return (mult_options(&fmt, ap));
+	else
+		return (extra_con(&fmt, ap, space));
+	return (0);
+}
+
+int			ft_printf(const char *fmt, ...)
+{
+	va_list		ap;
+	t_main		x;
+
+	x.count = 0;
+	va_start(ap, fmt);
+	x.format = (char*)fmt;
+	while (*x.format)
+	{
+		if (*x.format == '%')
 		{
-			str += 1;
-			ft_getval(&str, f, pa);
+			x.format += 1;
+			if ((x.len = read_con(&x.format, ap, 0)) == 0)
+				break ;
+			x.count += x.len;
 		}
 		else
-			f->t.res += ft_putchar(*str);
-		str++;
+		{
+			ft_putchar(*x.format);
+			x.count += 1;
+		}
+		x.format += 1;
 	}
-	va_end(pa);
-	return (f->t.res);
+	va_end(ap);
+	return (x.count);
 }

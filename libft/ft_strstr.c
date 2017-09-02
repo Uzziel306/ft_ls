@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_strstr.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asolis <marvin@42.fr>                      +#+  +:+       +#+        */
+/*   By: gsolis <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/01/09 21:06:22 by asolis            #+#    #+#             */
-/*   Updated: 2017/01/10 19:39:44 by asolis           ###   ########.fr       */
+/*   Created: 2017/01/09 13:53:41 by gsolis            #+#    #+#             */
+/*   Updated: 2017/01/09 13:53:43 by gsolis           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,24 +14,26 @@
 
 char	*ft_strstr(const char *big, const char *little)
 {
-	int		i;
-	int		j;
-	char	*answer;
+	char	*i;
+	char	*x;
 
-	if (*little == '\0')
-		return ((char *)big);
-	answer = (char *)big;
-	i = 0;
-	while (answer[i] != '\0')
+	if (!*little)
+		return ((void *)big);
+	while (*big)
 	{
-		j = 0;
-		while (little[j] == answer[i + j])
+		if (*big == *little)
 		{
-			if (little[j + 1] == '\0')
-				return (answer + i);
-			j++;
+			i = (void *)big + 1;
+			x = (void *)little + 1;
+			while (*i && *x && *i == *x)
+			{
+				++i;
+				++x;
+			}
+			if (!*x)
+				return ((void *)big);
 		}
-		i++;
+		big++;
 	}
-	return (0);
+	return (NULL);
 }

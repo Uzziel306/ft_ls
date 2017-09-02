@@ -3,59 +3,53 @@
 /*                                                        :::      ::::::::   */
 /*   ft_itoa.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asolis <marvin@42.fr>                      +#+  +:+       +#+        */
+/*   By: gsolis <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/01/14 23:09:57 by asolis            #+#    #+#             */
-/*   Updated: 2017/01/14 23:10:00 by asolis           ###   ########.fr       */
+/*   Created: 2017/01/14 13:21:30 by gsolis            #+#    #+#             */
+/*   Updated: 2017/03/23 21:49:16 by gsolis           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-static	int		len(int l, int num, int n)
+static size_t	digit_count(long n)
 {
-	if (n < 0)
-		l += 1;
-	while (num)
-	{
-		num /= 10;
-		l++;
-	}
-	return (l);
-}
+	size_t i;
 
-static	char	*ultimatum(char *str, int n, int l)
-{
-	str[l] = '\0';
-	while (n != 0)
+	i = 1;
+	if (n < 0)
+		n = -n;
+	while (n >= 10)
 	{
-		str[--l] = n % 10 + '0';
+		i++;
 		n /= 10;
 	}
-	return (str);
+	return (i);
 }
 
 char			*ft_itoa(int n)
 {
-	int		l;
+	long	v;
+	size_t	count;
 	char	*str;
-	int		num;
+	char	neg;
 
-	l = 0;
-	if (n == -2147483648)
-		return (ft_strdup("-2147483648"));
-	if (n == 0)
-		return (ft_strdup("0"));
-	num = n;
-	l = len(l, num, n);
-	str = malloc(sizeof(char) * (l + 1));
-	if (!str)
+	v = n;
+	neg = (v < 0 ? 1 : 0);
+	count = digit_count(v);
+	str = ft_strnew(count + neg);
+	if (str == NULL)
 		return (NULL);
-	if (n < 0)
+	if (neg)
 	{
+		v = -v;
 		str[0] = '-';
-		n = -n;
 	}
-	str = ultimatum(str, n, l);
+	while (count > 0)
+	{
+		str[count + neg - 1] = (v % 10) + '0';
+		count--;
+		v /= 10;
+	}
 	return (str);
 }

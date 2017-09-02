@@ -3,38 +3,34 @@
 /*                                                        :::      ::::::::   */
 /*   ft_strtrim.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asolis <marvin@42.fr>                      +#+  +:+       +#+        */
+/*   By: gsolis <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/01/16 15:35:29 by asolis            #+#    #+#             */
-/*   Updated: 2017/01/16 15:35:30 by asolis           ###   ########.fr       */
+/*   Created: 2017/01/13 14:30:05 by gsolis            #+#    #+#             */
+/*   Updated: 2017/01/13 14:30:08 by gsolis           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-char	*ft_strtrim(char const *s)
+static int	whitespace(char c)
 {
-	int		i;
-	int		len;
-	char	*str;
+	if (c == ' ' || c == '\t' || c == '\n')
+		return (1);
+	return (0);
+}
 
-	if (s == NULL)
+char		*ft_strtrim(const char *s)
+{
+	char	*start;
+	char	*end;
+
+	if (!s)
 		return (NULL);
-	len = ft_strlen(s);
-	while (s[len - 1] == ' ' || s[len - 1] == '\t' || s[len - 1] == '\n')
-		len--;
-	i = -1;
-	while (s[++i] == ' ' || s[i] == '\t' || s[i] == '\n')
-		len--;
-	if (len <= 0)
-		len = 0;
-	str = (char*)malloc(sizeof(char) * (len + 1));
-	if (str == NULL)
-		return (NULL);
-	s += i;
-	i = -1;
-	while (++i < len)
-		str[i] = *s++;
-	str[i] = '\0';
-	return (str);
+	start = (char *)s;
+	end = ft_strchr(s, 0) - 1;
+	while (whitespace(*start))
+		++start;
+	while (whitespace(*end) && end > start)
+		--end;
+	return (ft_strsub(start, 0, 1 + end - start));
 }

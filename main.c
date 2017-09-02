@@ -3,468 +3,192 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asolis <asolis@student.42.fr>              +#+  +:+       +#+        */
+/*   By: asolis <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/04/26 01:36:53 by asolis            #+#    #+#             */
-/*   Updated: 2017/04/26 03:48:16 by asolis           ###   ########.fr       */
+/*   Created: 2017/05/13 01:16:25 by asolis            #+#    #+#             */
+/*   Updated: 2017/05/13 01:16:26 by asolis           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ls.h"
 
-void		start(t_ls *f)
+/*
+** PRINT_BASIC_T_R
+** ---------------------------------------------------------------------------
+** Esta funcion hara el acomodado de la flag "t" y hara la impresion del
+** nombre sin mas atributos de modo reversivo.
+*/
+
+void			print_basic_t_r(t_top *x, char **matrix, char **times)
 {
-	f->t.i = 0;
-	f->t.j = 0;
-	f->t.z = 0;
-	f->t.r = 0;
-	f->t.flag = 1;
-	f->t.tb = 0;
-	f->f.l = 0;
-	f->f.r2 = 0;
-	f->f.a = 0;
-	f->f.r = 0;
-	f->f.t = 0;
-}
-
-void			ft_swapchar(char **a, char **b)
-{
-	char		*c;
-
-	c = ft_strdup(*a);
-	*a = ft_strdup(*b);
-	*b = ft_strdup(c);
-}
-
-int				getting_all_blocks(char **matrix, t_ls *f)
-{
-	int i;
-	struct	stat fileStat;
-	int count;
-
-	i = 0;
-	count = 0;
-	while (matrix[i] != NULL)
+	while (x->type.flag != 0)
 	{
-		stat(matrix[i], &fileStat);
-		count += fileStat.st_blocks;
-		i++;
-	}
-	return (count);
-}
-
-int				print_permissions(struct	stat fileStat, char *file)
-{
-	if(stat(file, &fileStat) < 0)
-			return 1;
-	ft_printf((S_ISDIR(fileStat.st_mode)) ? "d" : "-");
-	ft_printf((fileStat.st_mode & S_IRUSR) ? "r" : "-");
-	ft_printf((fileStat.st_mode & S_IWUSR) ? "w" : "-");
-	ft_printf((fileStat.st_mode & S_IXUSR) ? "x" : "-");
-	ft_printf((fileStat.st_mode & S_IRGRP) ? "r" : "-");
-	ft_printf((fileStat.st_mode & S_IWGRP) ? "w" : "-");
-	ft_printf((fileStat.st_mode & S_IXGRP) ? "x" : "-");
-	ft_printf((fileStat.st_mode & S_IROTH) ? "r" : "-");
-	ft_printf((fileStat.st_mode & S_IWOTH) ? "w" : "-");
-	ft_printf((fileStat.st_mode & S_IXOTH) ? "x" : "-");
-	return (fileStat.st_blocks);
-}
-
-int				print_value(char *file, char *dir, char flag)
-{
-	char		date[36];
-	struct	stat fileStat;
-	struct	passwd *pw;
-	struct	group  *gr;
-	// printf("file = %s\n dir = %s\n", file, dir);
-	if(stat(file, &fileStat) < 0)
-			return 1;
-	pw = getpwuid(fileStat.st_uid);
-	gr = getgrgid(fileStat.st_gid);
-	print_permissions(fileStat, file);
-	ft_printf("  %d %s  %s %7d ", fileStat.st_nlink, pw->pw_name, gr->gr_name, fileStat.st_size);
-	if (flag == 1)
-		ft_printf("%s %s\n", ft_strsub(ctime(&fileStat.st_ctime), 4, 12), file);
-	else if(flag == 0)
-		ft_printf("%s %s\n", ft_strsub(ctime(&fileStat.st_ctime), 4, 12), dir);
-	return (fileStat.st_blocks);
-}
-
-
-int				ft_lendir(char *file) //Len of directory
-{
-	struct	dirent *pDirent;
-	DIR			*pDir;
-	int			i;
-
-	pDir = opendir(file);
-	i = 0;
-	while ((pDirent = readdir(pDir)) != NULL)
-	if(pDirent->d_name[0] != '.')
-		i++;
-	closedir(pDir);
-	return (i);
-}
-
-void			ft_print_Matrix(char **matrix, int flag, char **direction) //Print the matrix
-{
-	int			j;
-
-	j = -1;
-	if (flag == 1)
-	{
-		while(matrix[++j] != NULL)
-			ft_printf("%s\n", matrix[j]);
-	}
-	else if (flag == 0)
-	{
-		while(matrix[++j] != NULL)
-			print_value(matrix[j], direction[j], 1);
-	}
-	else if (flag == 2)
+		x->type.flag = 0;
+		while (times[++x->type.j] != NULL)
 		{
-			while(matrix[++j] != NULL)
-				print_value(matrix[j], direction[j], 0);
-		}
-}
-
-char			**ft_make_matrix(int size, char *file) // feed the matrix with the names of the files in a randoom way
-{
-	struct	dirent *pDirent;
-	DIR 		*pDir;
-	int 		i;
-	char 		**matrix;
-
-	matrix = (char **)malloc(sizeof(char *) * (size + 1));
-	pDir = opendir(file);
-	i = 0;
-	while ((pDirent = readdir(pDir)) != NULL)
-		{
-			if(pDirent->d_name[0] != '.')
+			if ((times[x->type.j + 1] && ft_strcmp(times[x->type.j],
+				times[x->type.j + 1]) == 0) && (matrix[x->type.j + 1] &&
+				ft_strcmp(matrix[x->type.j], matrix[x->type.j + 1]) > 0))
 			{
-				matrix[i] = ft_strdup(pDirent->d_name);
-				i++;
+				ft_swapchar(&matrix[x->type.j + 1], &matrix[x->type.j]);
+				x->type.flag++;
+			}
+			if (times[x->type.j + 1] && ft_strcmp(times[x->type.j],
+				times[x->type.j + 1]) > 0)
+			{
+				ft_swapchar(&times[x->type.j], &times[x->type.j + 1]);
+				ft_swapchar(&matrix[x->type.j], &matrix[x->type.j + 1]);
+				x->type.flag++;
 			}
 		}
-		matrix[i] = NULL;
-	closedir(pDir);
-	// ft_print_Matrix(matrix);
-	return (matrix);
-}
-
-char			**ft_make_matrix_2(int size, char *file) // feed the matrix with the names of the files in a randoom way
-{
-	struct	dirent *pDirent;
-	DIR 		*pDir;
-	int 		i;
-	char 		**matrix;
-
-	matrix = (char **)malloc(sizeof(char *) * (size + 1));
-	pDir = opendir(file);
-	i = 0;
-	while ((pDirent = readdir(pDir)) != NULL)
-		{
-				matrix[i] = ft_strdup(pDirent->d_name);
-				i++;
-		}
-		matrix[i] = NULL;
-	closedir(pDir);
-	return (matrix);
-}
-
-char		**ft_ls_a(t_ls *f, char *file) // ls unix comand
-{
-	char **matrix;
-
-	start(f);
-	f->t.i = ft_lendir(file);
-	matrix = ft_make_matrix_2(f->t.i, file);
-	while (f->t.flag != 0)
-	{
-		f->t.flag = 0;
-		while(matrix[f->t.j] != NULL)
-		{
-			if (matrix[f->t.j + 1] && ft_strcmp(matrix[f->t.j], matrix[f->t.j + 1]) > 0)
-			{
-				ft_swapchar(&matrix[f->t.j], &matrix[f->t.j + 1]); //swaping the names
-				f->t.flag += 1;
-			}
-			f->t.j++;
-		}
-		f->t.j = 0;
+		x->type.j = -1;
 	}
-	return(matrix);
+	x->type.j = -1;
+	while (matrix[++x->type.j] != NULL)
+		print_basic_color(matrix[x->type.j]);
 }
 
-char		**ft_ls_r(t_ls *f, char *file) // ls unix comand
-{
-	char **matrix;
+/*
+** FT_LS_T
+** ---------------------------------------------------------------------------
+** Esta funcion hara las funciones basicas de recuperacion de datos, para
+** despues mandarlo a la funcion donde se hara su organizacion por fecha.
+*/
 
-	start(f);
-	f->t.i = ft_lendir(file);
-	matrix = ft_make_matrix(f->t.i, file);
-	while (f->t.flag != 0)
-	{
-		f->t.flag = 0;
-		while(matrix[f->t.j] != NULL)
-		{
-			if (matrix[f->t.j + 1] && ft_strcmp(matrix[f->t.j], matrix[f->t.j + 1]) < 0)
-			{
-				ft_swapchar(&matrix[f->t.j], &matrix[f->t.j + 1]); //swaping the names
-				f->t.flag += 1;
-			}
-			f->t.j++;
-		}
-		f->t.j = 0;
-	}
-	return(matrix);
-}
-
-char		**ft_ls(t_ls *f, char *file) // ls unix comand
-{
-	char **matrix;
-
-	start(f);
-	f->t.i = ft_lendir(file);
-	matrix = ft_make_matrix(f->t.i, file);
-	while (f->t.flag != 0)
-	{
-		f->t.flag = 0;
-		while(matrix[f->t.j] != NULL)
-		{
-			if (matrix[f->t.j + 1] && ft_strcmp(matrix[f->t.j], matrix[f->t.j + 1]) > 0)
-			{
-				ft_swapchar(&matrix[f->t.j], &matrix[f->t.j + 1]); //swaping the names
-				f->t.flag += 1;
-			}
-			f->t.j++;
-		}
-		f->t.j = 0;
-	}
-	return(matrix);
-}
-
-int				ft_getting_dir(char *file)
-{
-	struct	stat fileStat;
-
-	stat(file, &fileStat);
-	if(S_ISDIR(fileStat.st_mode))
-		return(1);
-	return (0);
-	}
-
-void			ft_ls_R(t_ls *f, char *file)
+void			ft_ls_t(t_top *x, char *path)
 {
 	char		**matrix;
-	int			i;
-	struct	stat fileStat;
-	char		*tmp;
+	char		**matrix_time;
 
-	i = -1;
-	if ((ft_strcmp(file, ".") != 0))
-		ft_printf("%s : \n", file);
-	matrix = ft_ls(f, file);
-	ft_print_Matrix(matrix, 1, f->t.matrix);
-	while (matrix[++i] != NULL)
-	{
-		tmp = ft_strjoin(file, "/");
-		f->t.tmp = ft_strjoin(tmp, matrix[i]);
-		stat(f->t.tmp, &fileStat);
-		if(S_ISDIR(fileStat.st_mode))
-			{
-				matrix[i] = ft_strdup(f->t.tmp);
-				ft_printf("\n", file);
-				ft_ls_R(f, matrix[i]);
-			}
-	}
-
+	if (security_path(path) == 0)
+		return ;
+	x->type.flag = 1;
+	x->type.j = -1;
+	x->type.i = ft_lendir(x, path);
+	matrix = ft_make_matrix(x->type.i, x, path);
+	if (x->flag.rr > 1)
+		matrix_time = ft_catching_time_r(x->type.i, x, matrix, path);
+	else
+		matrix_time = ft_catching_time(x->type.i, x, matrix, path);
+	x->type.j = -1;
+	if (x->flag.rr >= 1)
+		recurtion_mexa_t(path, x, -1);
+	else if (x->flag.l >= 1 && x->flag.r == 0)
+		comp_matrix_t(x, matrix, matrix_time, path);
+	else if (x->flag.l >= 1 && x->flag.r >= 1)
+		comp_matrix_t_r(x, matrix, matrix_time, path);
+	else if (x->flag.r > 0)
+		print_basic_t_r(x, matrix, matrix_time);
+	else
+		print_basic_t(x, matrix, matrix_time);
 }
 
-void			ft_ls_l(t_ls *f, char *file)
-{
-	char		**matrix;
-	char		**tmp;
+/*
+** PRINT_r
+** ---------------------------------------------------------------------------
+** Esta funcion recibe una direccion donde creara una matriz con los que
+** obtendra  los nombres de los archivos desacomodados, despues acomodara en
+** orden de ASCII  pero en reversa (Z - A). E imprimira la matriz con los
+** nombres de los archivos.
+*/
 
-	matrix = ft_ls(f, file);
-	tmp = ft_ls(f, file);
-	if (f->t.i != 1)
-		ft_printf("total %d\n", getting_all_blocks(matrix, f));
-	ft_print_Matrix(matrix, 0, tmp);
-}
-
-char				**getting_direction(char **matrix, char *file,  t_ls *f)
-{
-	int i;
-	char			*tmp;
-	char			*tmp2;
-	char			**tmp3;
-
-	tmp3 = (char**)malloc(sizeof(char*) * (f->t.i + 1));
-	tmp3[f->t.i] = NULL;
-	i = 0;
-	while (matrix[i] != NULL)
-	{
-		tmp = ft_strjoin(file, "/");
-		tmp2 = ft_strjoin(tmp, matrix[i]);
-		tmp3[i] = ft_strdup(tmp2);
-		i++;
-	}
-	return (tmp3);
-}
-
-void			ft_ls_R_2(t_ls *f, char *file)
-{
-	char **matrix;
-	int i;
-	struct	stat fileStat;
-	char **direction;
-
-	i = -1;
-	if ((ft_strcmp(file, ".") != 0))
-		ft_printf("%s : \n", file);
-	matrix = ft_ls(f, file);
-	direction = getting_direction(matrix, file, f);
-	ft_printf("total %d\n", getting_all_blocks(direction, f));
-	ft_print_Matrix(direction, 2, matrix);
-	while (direction[++i] != NULL)
-	{
-		stat(direction[i], &fileStat);
-		if(S_ISDIR(fileStat.st_mode))
-			{
-				ft_printf("\n");
-				ft_ls_R_2(f, direction[i]);
-			}
-	}
-}
-
-int			menu(t_ls *f)
-{
-
-	if (f->f.l == 0 && f->f.r2 == 0 && f->f.a == 0 && f->f.r == 0 && f->f.t == 0)
-		ft_print_Matrix(ft_ls(f, "."), 1, f->t.matrix);
-	else if (f->f.l >= 1 && f->f.r2 == 0 && f->f.a == 0 && f->f.r == 0 && f->f.t == 0)
-		ft_ls_l(f, ".");
-	else if (f->f.l == 0 && f->f.r2 >= 1 && f->f.a == 0 && f->f.r == 0 && f->f.t == 0)
-		ft_ls_R(f, ".");
-	else if (f->f.l >= 1 && f->f.r2 >= 1 && f->f.a == 0 && f->f.r == 0 && f->f.t == 0)
-		ft_ls_R_2(f, ".");
-	else if (f->f.l == 0 && f->f.r2 == 0 && f->f.a >= 1 && f->f.r == 0 && f->f.t == 0)
-		ft_print_Matrix(ft_ls_a(f, "."), 1, f->t.matrix);
-		else if (f->f.l == 0 && f->f.r2 == 0 && f->f.a == 0 && f->f.r >= 1 && f->f.t == 0)
-			ft_print_Matrix(ft_ls_r(f, "."), 1, f->t.matrix);
-	return (0);
-}
-
-char			**arguments_matrix(char **argv, int len)
+void			print_r(t_top *x, char *path)
 {
 	char		**matrix;
 
-	matrix = malloc(sizeof(char*) * (len + 1));
-	return(matrix);
-}
-
-
-// int				flags(int argc, char **argv, t_ls *f)
-// {
-// 	int			i;
-// 	char		**matrix;
-// 	int	len;
-//
-// 	len = 0;
-// 	i = -1;
-// 	while (argv[++i] != NULL)
-// 	{
-// 		if ((ft_strcmp(argv[i], "-l")) == 0)
-// 			f->f.l = 1;
-// 		else if ((ft_strcmp(argv[i], "-R")) == 0)
-// 			f->f.r2 = 1;
-// 		else if ((ft_strcmp(argv[i], "-a")) == 0)
-// 			f->f.a = 1;
-// 		else if ((ft_strcmp(argv[i], "-r")) == 0)
-// 			f->f.r = 1;
-// 		else if ((ft_strcmp(argv[i], "-t")) == 0;
-// 	}
-// 	len = getting_arguments(argv);
-// 	return (menu(f));
-// }
-
-int			flag_on(t_ls *x)
-{
-	if (x->f.l > 0)
-		return (1);
-	else if (x->f.r2 > 0)
-		return (1);
-	else if (x->f.a > 0)
-		return (1);
-	else if (x->f.r > 0)
-		return (1);
-	else if (x->f.t > 0)
-		return (1);
-	return (0);
-}
-
-int				getting_arguments(char **argv)
-{
-	int			i;
-	int			len;
-
-	i = 1;
-	len = 0;
-	while(argv[i][0] != '-')
+	x->type.flag = 1;
+	x->type.j = 0;
+	x->type.i = ft_lendir(x, path);
+	matrix = ft_make_matrix(x->type.i, x, path);
+	while (x->type.flag != 0)
 	{
-		len += 1;
-		i += 1;
-	}
-}
-
-void		start_flag(char **argv, t_ls *x)
-{
-	int i;
-	int j;
-
-	i = 1;
-	j = 1;
-	if (argv[i][0] == '-')
-	{
-		while (argv[i])
+		x->type.flag = 0;
+		while (matrix[x->type.j] != NULL)
 		{
-			while (argv[i][j])
+			if (matrix[x->type.j + 1] && ft_strcmp(matrix[x->type.j],
+					matrix[x->type.j + 1]) < 0)
 			{
-				x->f.l += (argv[i][j] == 'l') ? 1 : 0;
-				x->f.r2 += (argv[i][j] == 'R') ? 1 : 0;
-				x->f.a += (argv[i][j] == 'a') ? 1 : 0;
-				x->f.r += (argv[i][j] == 'r') ? 1 : 0;
-				x->f.t += (argv[i][j] == 't') ? 1 : 0;
-				j++;
+				ft_swapchar(&matrix[x->type.j], &matrix[x->type.j + 1]);
+				x->type.flag++;
 			}
-			i++;
-			j = 1;
+			x->type.j++;
 		}
+		x->type.j = 0;
 	}
+	x->type.j = -1;
+	while (matrix[++x->type.j] != NULL)
+		print_basic_color(matrix[x->type.j]);
 }
 
-int			main(int argc, char **argv)
+/*
+** LS_MENU
+** ---------------------------------------------------------------------------
+** Esta funcion es solo posible acceder si alguno de los argumentos son y solo
+** son  -l -r -a -R -t.
+** Esta funcion es de las mas importantes, aqui sabremos que rumbo va a tomar
+** el programa, y todo sera bajo el valor que contengan las flags, si el valor
+** de cada
+** flag es mayor a 1, sera posible entrar a los if que estan acomndados de
+** manera en que la estructura para la impresion sea correcta.
+*/
+
+void			ls_menu(t_top *x, char *path)
 {
-	t_ls	*f;
-	char **direction;
-	if(!(f = (t_ls*)malloc(sizeof(t_ls))))
-		return (0);
-	// start(f);
-	// flags(argc, argv, f);
+	char		**matrix;
+
+	matrix = NULL;
+	if (security_path(path) == 0)
+		return ;
+	if (x->flag.aa > 0 && x->flag.a == 0)
+		only_dot(x, path);
+	else if (x->flag.f > 0)
+		no_sort(x, path);
+	else if (x->flag.t >= 1)
+		ft_ls_t(x, path);
+	else if (x->flag.rr >= 1)
+		recurtion_mexa(path, x, -1);
+	else if (x->flag.a >= 1 && x->flag.l <= 0)
+		print_basic(x, path);
+	else if (x->flag.r >= 1 && x->flag.l <= 0)
+		print_r(x, path);
+	else
+		print_l(x, path, matrix);
+}
+
+/*
+** MAIN
+** ---------------------------------------------------------------------------
+** Iniciamos en Main donde nos dirigiremos depende del numero de argumentos
+** que introducen.
+** En caso de tener 2 argumentos(tomando en cuanta el nombre del archivo)
+** entraremos a la funcion donde veremos si los argumentos son -l -r -R
+** -a -t o en conjunto -lRar o combinaciones posibles.
+** En caso de que el argumento no tenga "-" el argumento se tomara como
+** referencia a un archivo.
+** En caso de que se introduzca un argumento que comience en "-" y no sea
+** uno dentro de los reconocidos de imprimira el mensaje de illegal option.
+*/
+
+int				main(int argc, char **argv)
+{
+	t_top		*x;
+
+	x = (t_top*)malloc(sizeof(t_top));
+	flag_zero(x);
 	if (argc >= 1)
 	{
 		if (argc == 1)
-			ft_print_Matrix(ft_ls(f, "."), 1, f->t.matrix);
+			print_basic(x, ".");
 		else if (argc >= 2)
 		{
-			start_flag(argv, f);
-			if (flag_on(f))
-				menu(f);
-			else
-				ft_printf("ft_ls: illegal option -- %c\nusage: ft_ls \
-					[-Ralrt] [file ...]\n", argv[1][1]);
+			start_flag(argv, x);
+			if (flag_on(x) && x->flag.file <= 0)
+				ls_menu(x, ".");
+			else if (x->flag.file == 0)
+				ft_printf("ft_ls: illegal option -- %c\nusage: ft_ls"
+					" [-ARaflrt] [file ...]\n", argv[1][1]);
 		}
 	}
-	return (0);
+	ft_memdel((void**)&x);
+	return (1);
 }
